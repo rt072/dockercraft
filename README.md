@@ -4,7 +4,10 @@ Dockercraft is a FastAPI web application for reviewing and improving Dockerfiles
 
 > Optimization and size figures are recommendations and estimates only. Dockercraft does not build Docker images or measure their actual size, security, or runtime behavior. Review generated changes before using them.
 
-![logo](static/logo-ch.png)
+![logo](static/logo-ch.png)  
+
+[screenshots](docs/screenshots/dockercraft.png)
+
 
 ## Features
 
