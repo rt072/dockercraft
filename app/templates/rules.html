@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}Dockerfile Audit Rules — Dockercraft{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/landing.css?v={{ STATIC_CSS_VERSION }}">
+{% endblock %}
+
+{% block content %}
+<section class="section audit-rules-page">
+    <div class="audit-rules-intro">
+        <span class="audit-rules-eyebrow">DOCKERFILE AUDIT</span>
+        <h2>8 rules we check</h2>
+        <p>The analyzer looks for common security, build, and image-size concerns. Each rule below explains what it checks and what you can consider changing.</p>
+    </div>
+
+    <div class="audit-rules-grid">
+        <article class="audit-rule-card">
+            <div class="audit-rule-heading"><span class="audit-rule-number">01</span><span class="audit-rule-level warning">Warning</span></div>
+            <h3>Run the container as a non-root user</h3>
+            <p>Detects an explicit <code>USER root</code> instruction. If the application does not need administrator privileges at runtime, create a dedicated user and switch to it with <code>USER app</code>.</p>
+            <p class="audit-rule-note">When <code>USER</code> is missing, a separate analyzer check recommends adding a non-root user.</p>
+        </article>
+
+        <article class="audit-rule-card">
+            <div class="audit-rule-heading"><span class="audit-rule-number">02</span><span class="audit-rule-level warning">Warning</span></div>
+            <h3>Prefer COPY over ADD</h3>
+            <p>Finds a plain <code>ADD</code> instruction. <code>COPY</code> makes file copying explicit and is usually more predictable. Use <code>ADD</code> when you need its extra behavior, such as automatically extracting a local archive.</p>
+        </article>
+
+        <article class="audit-rule-card">
+            <div class="audit-rule-heading"><span class="audit-rule-number">03</span><span class="audit-rule-level warning">Warning</span></div>
+            <h3>Be careful downloading files in RUN</h3>
+            <p>Looks for <code>curl</code> or <code>wget</code> in a <code>RUN</code> instruction. For build artifacts, consider downloading in a separate build stage and copying the result with <code>COPY --from</code>. Verify download sources and checksums.</p>
+            <p class="audit-rule-note">This is a text-based heuristic, not a full shell-command analysis.</p>
+        </article>
+
+        <article class="audit-rule-card">
+            <div class="audit-rule-heading"><span class="audit-rule-number">04</span><span class="audit-rule-level info">Tip</span></div>
+            <h3>Clean up APT package lists</h3>
+            <p>If a line containing <code>apt-get install</code> does not also contain cleanup for <code>/var/lib/apt/lists</code>, the analyzer suggests removing the package lists. Keeping update, install, and cleanup in one <code>RUN</code> helps avoid leaving them in an image layer.</p>
+        </article>
+
+        <article class="audit-rule-card">
+            <div class="audit-rule-heading"><span class="audit-rule-number">05</span><span class="audit-rule-level info">Tip</span></div>
+            <h3>Reduce the number of RUN layers</h3>
+            <p>When a Dockerfile has more than three <code>RUN</code> instructions, the analyzer suggests combining related commands. Each <code>RUN</code> creates an image layer; do not combine unrelated steps at the expense of readability and maintainability.</p>
+        </article>
+
+        <article class="audit-rule-card">
+            <div class="audit-rule-heading"><span class="audit-rule-number">06</span><span class="audit-rule-level warning">Warning</span></div>
+            <h3>Choose how container data is mounted</h3>
+            <p>Flags any <code>VOLUME</code> instruction. It declares a mount point in the image and affects container behavior. Consider whether to declare it in the image or configure a volume or bind mount when starting the container.</p>
+            <p class="audit-rule-note">Docker's VOLUME instruction is not deprecated; this is a recommendation from the analyzer, not a prohibition.</p>
+        </article>
+
+        <article class="audit-rule-card">
+            <div class="audit-rule-heading"><span class="audit-rule-number">07</span><span class="audit-rule-level error">Error</span></div>
+            <h3>Keep secrets out of ENV</h3>
+            <p>Looks for names such as <code>PASSWORD</code>, <code>SECRET</code>, <code>TOKEN</code>, or <code>API_KEY</code> in an <code>ENV</code> instruction. Do not put credentials in a Dockerfile; use your runtime platform's secret store or BuildKit secret mounts for build-time secrets.</p>
+            <p class="audit-rule-note">The check examines variable names, not the value contents.</p>
+        </article>
+
+        <article class="audit-rule-card">
+            <div class="audit-rule-heading"><span class="audit-rule-number">08</span><span class="audit-rule-level warning">Warning</span></div>
+            <h3>Pin the base image version</h3>
+            <p>Finds <code>:latest</code> in a <code>FROM</code> instruction. A floating tag can refer to different image versions over time. Pin a specific tag, or use an image digest for stricter build reproducibility.</p>
+        </article>
+    </div>
+
+    <p class="audit-rules-disclaimer">These eight checks are practical hints, not a complete security audit or Dockerfile validator. Review your project's context before applying any recommendation.</p>
+    <a class="audit-rules-back" href="/">← Back to the analyzer</a>
+</section>
+{% endblock %}

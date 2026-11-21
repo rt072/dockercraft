@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+
+{% block title %}Container Optimizer — Analyze & Optimize your Dockerfile{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/index.css">
+    <link rel="stylesheet" href="/static/css/landing.css?v={{ STATIC_CSS_VERSION }}">
+{% endblock %}
+
+
+{% block content %}
+    <!-- Input Card -->
+    <section class="section input-section">
+        <div class="card">
+            <div class="card-header">
+                <svg class="card-icon icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 4h-2.5a1.5 1.5 0 0 0-3 0H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="card-title">Paste Dockerfile content</span>
+            </div>
+            <div class="dockerfile-input-wrap">
+                <textarea id="dockerfileText" class="input-area" placeholder="Paste your Dockerfile content here..."></textarea>
+            </div>
+            <div class="templates-row" style="margin-top:0.6rem;">
+                <label style="font-weight:600;margin-right:0.5rem;">Examples / Templates:</label>
+                <div class="template-buttons" style="display:inline-flex;gap:0.5rem;">
+                    <button class="btn btn-sm" data-template="/static/templates/node.dockerfile" onclick="loadTemplate(event)">Node</button>
+                    <button class="btn btn-sm" data-template="/static/templates/python.dockerfile" onclick="loadTemplate(event)">Python</button>
+                    <button class="btn btn-sm" data-template="/static/templates/go.dockerfile" onclick="loadTemplate(event)">Go</button>
+                    <button class="btn btn-sm" data-template="/static/templates/rust.dockerfile" onclick="loadTemplate(event)">Rust</button>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary" onclick="analyzeText()">Analyze</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analysis Loading -->
+    <section class="section analysis-section" id="analysisLoading" style="display:none;">
+        <div class="card card-loading">
+            <div class="skeleton-loader">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analysis Results -->
+    <section class="section result-section" id="result">
+        <div class="card result-card">
+            <div class="card-header">
+                <svg class="card-icon icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+                <span class="card-title">Analysis Results</span>
+            </div>
+            <div class="meta" id="meta"></div>
+            <div id="issues"></div>
+            <div class="ms-suggestion" id="ms-suggestion"></div>
+            <div class="card-actions">
+                <button class="btn" onclick="optimizeText()"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Optimize</span></button>
+                <label class="include-inline">
+                    <input id="includeDockerignore" type="checkbox">
+                    <span>Include .dockerignore in optimized result</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Optimization Results -->
+        <div class="card result-card" id="optimizeResult" style="display:none;">
+            <div class="card-header">
+                <svg class="card-icon icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10v2h8v-2a6 6 0 0 0-4-10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="card-title">Optimized Dockerfile</span>
+            </div>
+            <div class="meta" id="optimize-meta"></div>
+            <div class="compare-row">
+                <div class="compare-col">
+                    <h3>Original</h3>
+                    <div class="code-block">
+                        <pre><code id="original-code" class="language-dockerfile"></code></pre>
+                        <button class="btn btn-sm copy-btn" onclick="copyOriginal()">Copy</button>
+                    </div>
+                </div>
+                <div class="compare-col">
+                    <h3>Optimized</h3>
+                    <div class="code-block">
+                        <pre><code id="optimized-code" class="language-dockerfile"></code></pre>
+                        <button class="btn btn-sm copy-btn" onclick="copyOptimized()">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="changes-list" id="changes-list"></div>
+            <div class="card-actions">
+                <button class="btn btn-sm download-btn" onclick="downloadDockerfile()"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15V3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Download Optimized Dockerfile</span></button>
+                <button id="download-dockerignore-btn" class="btn btn-sm download-btn" onclick="downloadDockerignore()"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15V3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Download .dockerignore</span></button>
+            </div>
+        </div>
+    </section>
+
+    <script src="/static/js/index.js?v={{ STATIC_JS_VERSION }}"></script>
+
+
+{% endblock %}

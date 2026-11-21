@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block title %}Privacy — Dockercraft{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/landing.css?v={{ STATIC_CSS_VERSION }}">
+{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Privacy &amp; Data</span>
+        </div>
+        <p>Dockerfile text is processed only to return the requested analysis or optimization. This application does not retain Dockerfile text or analysis results after returning a response.</p>
+        <p>The application does not issue cookies. Deployment infrastructure may have separate access logs and retention settings.</p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,77 @@
+name: Deploy to test server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install SSH client
+        run: |
+          if command -v ssh >/dev/null 2>&1; then
+            exit 0
+          fi
+          if ! command -v apt-get >/dev/null 2>&1; then
+            echo "ssh and apt-get are unavailable in this runner image" >&2
+            exit 1
+          fi
+          if [ "$(id -u)" -eq 0 ]; then
+            apt-get update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openssh-client
+          elif command -v sudo >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openssh-client
+          else
+            echo "Cannot install openssh-client: runner is not root and sudo is unavailable" >&2
+            exit 1
+          fi
+      - name: Pull, test, and deploy on test server
+        env:
+          TEST_SERVER_HOST: ${{ secrets.TEST_SERVER_HOST }}
+          TEST_SERVER_USER: ${{ secrets.TEST_SERVER_USER }}
+          TEST_SERVER_SSH_KEY: ${{ secrets.TEST_SERVER_SSH_KEY }}
+          TEST_SERVER_KNOWN_HOSTS: ${{ secrets.TEST_SERVER_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          : "${TEST_SERVER_HOST:?Set the TEST_SERVER_HOST repository secret}"
+          : "${TEST_SERVER_USER:?Set the TEST_SERVER_USER repository secret}"
+          : "${TEST_SERVER_SSH_KEY:?Set the TEST_SERVER_SSH_KEY repository secret}"
+          : "${TEST_SERVER_KNOWN_HOSTS:?Set the TEST_SERVER_KNOWN_HOSTS repository secret}"
+
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$TEST_SERVER_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$TEST_SERVER_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+          trap 'rm -f "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"' EXIT
+
+          ssh \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/id_ed25519" \
+            "$TEST_SERVER_USER@$TEST_SERVER_HOST" 'bash -se' <<'REMOTE'
+          set -euo pipefail
+          cd ~/dockercraft
+
+          # Fast-forward only; never reset or clean server-local files.
+          git pull --ff-only origin main
+          .venv/bin/python -m pip install -r requirements.txt
+          .venv/bin/python -m pytest -q
+
+          systemctl --user restart dockercraft.service
+          for attempt in $(seq 1 15); do
+            if curl -fsS --max-time 3 http://127.0.0.1:8000/health; then
+              printf '\n'
+              exit 0
+            fi
+            sleep 2
+          done
+
+          journalctl --user -u dockercraft.service -n 50 --no-pager
+          exit 1
+          REMOTE

@@ -1,0 +1,145 @@
+/* Dark theme — Tango palette (linux.org.ru) */
+:root {
+    --bg: #2e3436;
+    --bg-card: #272C2D;
+    --text: #babdb6;
+    --text-muted: #888a85;
+    --text-issue: #272C2D;
+    --border: #555753;
+    --shadow: rgba(0,0,0,0.3);
+    --accent: #729fcf;
+    --accent-hover: #3465a4;
+    --meta-bg: #3465a4;
+    --issue-bg-warning: #fef08a;
+    --issue-bg-error: #fca5a5;
+    --issue-bg-info: #93c5fd;
+    --changes-border: #555753;
+    --upload-bg: #272C2D;
+    --upload-hover: #204a87;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Arial", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; flex: 1; }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 600;
+}
+
+.nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+}
+.nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50px;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: all 0.2s ease;
+}
+.nav a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--shadow);
+}
+
+.btn { display: inline-block; padding: 0.6rem 1.2rem; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+.btn:hover { background: var(--accent-hover); }
+.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+.btn-danger { background: #a40000; }
+.btn-danger:hover { background: #c4a000; }
+
+.card { background: var(--bg-card); border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px var(--shadow); margin-bottom: 1rem; }
+.card h2 { margin-bottom: 1rem; }
+
+.code-block {
+    background: var(--bg-card);
+    color: var(--text);
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-family: "Droid Sans Mono", monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px var(--shadow);
+    z-index: 100;
+}
+.theme-toggle:hover { transform: scale(1.1); }
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.3rem; font-weight: 500; }
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: var(--bg-card);
+    color: var(--text);
+}
+.form-group textarea { min-height: 100px; font-family: monospace; }
+
+.alert { padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+.alert-success { background: #8ae234; color: #2e3436; }
+.alert-error { background: #a40000; color: #eeeeec; }
+.alert-info { background: #729fcf; color: #2e3436; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+th { font-weight: 600; }
+
+.role-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.role-owner { background: #fcaf3e; color: #2e3436; }
+.role-member { background: #729fcf; color: #2e3436; }
+.role-admin { background: #ad7fa8; color: #2e3436; }
+
+
+/* Dark theme specific overrides */
+h1 { color: #e0e0e0; }
+.result-card h2 { color: #e0e0e0; }
+.issue { color: var(--text-issue); }
+.issue.warning .level { color: #fef08a; }
+.issue.error .level { color: #fca5a5; }
+.issue.info .level { color: #93c5fd; }
+.size-badge.original { background: #2e3436; color: #ef4444; }
+.size-badge.optimized { background: #2e3436; color: #8ae234; }

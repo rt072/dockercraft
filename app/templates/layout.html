@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ SITE_TITLE }}{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/css/light.css" id="theme-css">
+    {% block extra_css %}{% endblock %}
+
+    {# SEO meta tags + OpenGraph/Twitter #}
+    <meta name="description" content="{{ SITE_DESCRIPTION }}">
+    <meta property="og:title" content="{{ self.title() }}">
+    <meta property="og:description" content="{{ SITE_DESCRIPTION }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <link rel="canonical" href="{{ request.url }}">
+
+    {# JSON-LD structured data #}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "{{ SITE_TITLE }}",
+      "url": "{{ request.url.scheme }}://{{ request.headers.get('host') }}/",
+      "description": "{{ SITE_DESCRIPTION }}"
+    }
+    </script>
+
+
+    <link rel="stylesheet" href="/static/css/base16-chalk.min.css">
+    <script src="/static/js/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/dockerfile.min.js"></script>
+
+</head>
+<body>
+    {% include "_hero.html" %}
+    {% block content %}{% endblock %}
+
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

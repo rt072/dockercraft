@@ -1,0 +1,43 @@
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+secrets/
+.ssh/
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa_*
+id_ed25519
+id_ed25519_*
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Local runtime data, databases, and logs
+app/data/
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+nohup.out
+
+# Build artifacts
+dist/
+build/
